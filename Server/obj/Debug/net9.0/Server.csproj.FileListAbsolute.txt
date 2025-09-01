@@ -152,3 +152,4 @@ C:\Users\buggd\SkillSyncApp\Server\obj\Debug\net9.0\ref\Server.dll
 C:\Users\buggd\SkillSyncApp\server\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\buggd\SkillSyncApp\server\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\buggd\SkillSyncApp\server\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\buggd\SkillSyncApp\server\bin\Debug\net9.0\OpenAI-DotNet.dll

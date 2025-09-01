@@ -1,20 +1,19 @@
-// --- Add all necessary 'using' statements at the top ---
+using System.Net.Http.Headers;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
 // Server/Program.cs
-using OpenAI.Extensions; // <--- Add this using directive
 
 var builder = WebApplication.CreateBuilder(args);
-
-// --- 1. CONFIGURE SERVICES ---
 
 // Get the OpenAI API Key from user secrets
 string? openAiApiKey = builder.Configuration["OpenAI:ApiKey"];
 
-// Add the OpenAI Client to the services container
-builder.Services.AddOpenAIService(settings =>
-{
-    settings.ApiKey = openAiApiKey;
-});
+// Register simple options holder
+builder.Services.AddSingleton(new OpenAiOptions { ApiKey = openAiApiKey });
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -23,14 +22,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy =>
                       {
-                          // This MUST match the URL of your React app
-                          policy.WithOrigins("http://localhost:5173") 
+                          policy.WithOrigins("http://localhost:5173")
                                 .AllowAnyHeader()
                                 .AllowAnyMethod();
                       });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -41,10 +40,20 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// --- 2. BUILD THE APP ---
+// Register a named HttpClient for OpenAI. Uses the API key from OpenAiOptions.
+builder.Services.AddHttpClient("OpenAI", (sp, client) =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    var opts = sp.GetRequiredService<OpenAiOptions>();
+    if (!string.IsNullOrWhiteSpace(opts.ApiKey))
+    {
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", opts.ApiKey);
+    }
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("SkillSyncApp");
+});
+
 var app = builder.Build();
 
-// --- 3. CONFIGURE THE HTTP REQUEST PIPELINE ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -57,3 +66,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public class OpenAiOptions
+{
+    public string? ApiKey { get; set; }
+}

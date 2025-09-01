@@ -12,6 +12,7 @@
           "Microsoft.EntityFrameworkCore.Design": "9.0.8",
           "MySql.EntityFrameworkCore": "9.0.6",
           "OpenAI": "2.3.0",
+          "OpenAI-DotNet": "8.8.1",
           "Swashbuckle.AspNetCore": "9.0.4"
         },
         "runtime": {
@@ -642,6 +643,14 @@
           }
         }
       },
+      "OpenAI-DotNet/8.8.1": {
+        "runtime": {
+          "lib/net8.0/OpenAI-DotNet.dll": {
+            "assemblyVersion": "8.8.1.0",
+            "fileVersion": "8.8.1.0"
+          }
+        }
+      },
       "Swashbuckle.AspNetCore/9.0.4": {
         "dependencies": {
           "Microsoft.Extensions.ApiDescription.Server": "9.0.0",
@@ -1177,6 +1186,13 @@
       "sha512": "sha512-z+fNKKSEsIelpR3swPJe+yFLlD1z+PGvpfbQgRWP1g1A++C5QvoGMnCtCj+H+0gw2E+VYIjt9G0fk3oixpvWrQ==",
       "path": "openai/2.3.0",
       "hashPath": "openai.2.3.0.nupkg.sha512"
+    },
+    "OpenAI-DotNet/8.8.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KugG7ShiaD0+MDtwcQHHBy/EJtaESV+naw5HYdkh2mn9IKVDTG8nlpCIQZgPPBP+LLqZOFeClUw2xxJW53oG4g==",
+      "path": "openai-dotnet/8.8.1",
+      "hashPath": "openai-dotnet.8.8.1.nupkg.sha512"
     },
     "Swashbuckle.AspNetCore/9.0.4": {
       "type": "package",
