@@ -1,9 +1,5 @@
 using System.Net.Http.Headers;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 // Server/Program.cs
 
