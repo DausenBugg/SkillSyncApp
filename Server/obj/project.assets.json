@@ -4236,23 +4236,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\buggd\\.nuget\\packages\\": {},
+    "C:\\Users\\Dausen Bugg\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\buggd\\SkillSyncApp\\Server\\Server.csproj",
+      "projectUniqueName": "C:\\Users\\Dausen Bugg\\Source\\Repos\\SkillSyncApp\\Server\\Server.csproj",
       "projectName": "Server",
-      "projectPath": "C:\\Users\\buggd\\SkillSyncApp\\Server\\Server.csproj",
-      "packagesPath": "C:\\Users\\buggd\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\buggd\\SkillSyncApp\\Server\\obj\\",
+      "projectPath": "C:\\Users\\Dausen Bugg\\Source\\Repos\\SkillSyncApp\\Server\\Server.csproj",
+      "packagesPath": "C:\\Users\\Dausen Bugg\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Dausen Bugg\\Source\\Repos\\SkillSyncApp\\Server\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\buggd\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Dausen Bugg\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4261,8 +4261,8 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {},
+        "https://nuget.bepinex.dev/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
