@@ -1,0 +1,28 @@
+[
+  {
+    "ContainingType": "Server.Controllers.AiController",
+    "Method": "AnalyzeText",
+    "RelativePath": "api/Ai/analyze",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Server.Controllers.AiAnalysisRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TestController",
+    "Method": "GetTestMessage",
+    "RelativePath": "api/Test/message",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]
