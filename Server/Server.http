@@ -1,6 +1,28 @@
+// This file is simple and lets you test your API with real and empty data
 @Server_HostAddress = http://localhost:5159
 
+# Get weather data (sample endpoint)
 GET {{Server_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+# Analyze a resume (main feature)
+POST {{Server_HostAddress}}/api/ai/analyze
+Content-Type: application/json
+
+{
+  "resumeText": "Experienced software developer skilled in C#, .NET, and web technologies. Worked on several backend projects and cloud deployments."
+}
+
+###
+
+# Test error handling (empty resume)
+POST {{Server_HostAddress}}/api/ai/analyze
+Content-Type: application/json
+
+{
+  "resumeText": ""
+}
 
 ###

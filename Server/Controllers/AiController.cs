@@ -24,12 +24,11 @@ namespace Server.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _openAiApiKey;
 
-        public AiController(ILogger<AiController> logger, IHttpClientFactory httpClientFactory)
+        public AiController(ILogger<AiController> logger, IHttpClientFactory httpClientFactory, OpenAiOptions openAiOptions)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            // Expect the OpenAI API key in environment variable OPENAI_API_KEY (or set here from configuration)
-            _openAiApiKey = "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";
+            _openAiApiKey = openAiOptions.ApiKey ?? "";
         }
 
         // This endpoint takes a resume and returns job matches, analysis, improvements, and resources.
@@ -39,18 +38,26 @@ namespace Server.Controllers
             if (string.IsNullOrWhiteSpace(request.ResumeText))
                 return BadRequest(new { error = "Resume text cannot be empty." });
 
-            var jobs = await FetchJobMatches(request.ResumeText);
-            var analysis = await AnalyzeJobRelevance(request.ResumeText, jobs);
-            var improvements = await SuggestResumeImprovements(request.ResumeText);
-            var resources = GetImprovementResources(improvements);
-
-            return Ok(new
+            try
             {
-                jobs,
-                analysis,
-                improvements,
-                resources
-            });
+                var jobs = await FetchJobMatches(request.ResumeText);
+                var analysis = await AnalyzeJobRelevance(request.ResumeText, jobs);
+                var improvements = await SuggestResumeImprovements(request.ResumeText);
+                var resources = GetImprovementResources(improvements);
+
+                return Ok(new
+                {
+                    jobs,
+                    analysis,
+                    improvements,
+                    resources
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error analyzing resume");
+                return StatusCode(500, new { error = "Server error. Please try again later." });
+            }
         }
 
         // Gets jobs that match the resume (mocked for now)
