@@ -4242,11 +4242,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Dausen Bugg\\Source\\Repos\\SkillSyncApp\\Server\\Server.csproj",
+      "projectUniqueName": "C:\\Users\\Dausen Bugg\\source\\repos\\DausenBugg\\SkillSyncApp\\Server\\Server.csproj",
       "projectName": "Server",
-      "projectPath": "C:\\Users\\Dausen Bugg\\Source\\Repos\\SkillSyncApp\\Server\\Server.csproj",
+      "projectPath": "C:\\Users\\Dausen Bugg\\source\\repos\\DausenBugg\\SkillSyncApp\\Server\\Server.csproj",
       "packagesPath": "C:\\Users\\Dausen Bugg\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Dausen Bugg\\Source\\Repos\\SkillSyncApp\\Server\\obj\\",
+      "outputPath": "C:\\Users\\Dausen Bugg\\source\\repos\\DausenBugg\\SkillSyncApp\\Server\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

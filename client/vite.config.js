@@ -1,3 +1,4 @@
+// Vite config for React, add proxy for API calls
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 

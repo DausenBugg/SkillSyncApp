@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import './App.css'; // We'll create this file next
+import './App.css';
 
 function App() {
   const [message, setMessage] = useState('Connecting to backend...');
