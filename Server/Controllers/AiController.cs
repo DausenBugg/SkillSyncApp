@@ -17,6 +17,7 @@ namespace Server.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _openAiApiKey;
 
+        // Constructor with DI for logger, HTTP client factory, and OpenAI options
         public AiController(ILogger<AiController> logger, IHttpClientFactory httpClientFactory, OpenAiOptions openAiOptions)
         {
             _logger = logger;

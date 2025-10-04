@@ -11,6 +11,7 @@ string? openAiApiKey = builder.Configuration["OpenAI:ApiKey"];
 // Register simple options holder
 builder.Services.AddSingleton(new OpenAiOptions { ApiKey = openAiApiKey });
 
+// Enable CORS for the frontend application
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddCors(options =>
@@ -24,6 +25,7 @@ builder.Services.AddCors(options =>
                       });
 });
 
+// Configure Entity Framework with MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -50,6 +52,7 @@ builder.Services.AddHttpClient("OpenAI", (sp, client) =>
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

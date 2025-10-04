@@ -7,6 +7,7 @@ function App() {
   // New state to control the style: 'loading', 'success', or 'error'
   const [statusType, setStatusType] = useState('loading');
 
+    // Fetch message from backend on component mount
   useEffect(() => {
     const fetchMessage = async () => {
       try {
@@ -23,6 +24,7 @@ function App() {
     fetchMessage();
   }, []);
 
+    // Render the component
   return (
     <div className="container">
       <div className="status-card">

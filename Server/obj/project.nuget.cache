@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sE2V4Aq/RZA=",
+  "dgSpecHash": "kCYoUyyjmkY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Dausen Bugg\\source\\repos\\DausenBugg\\SkillSyncApp\\server\\Server.csproj",
+  "projectFilePath": "C:\\Users\\Dausen Bugg\\source\\repos\\DausenBugg\\SkillSyncApp\\Server\\Server.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Dausen Bugg\\.nuget\\packages\\bouncycastle.cryptography\\2.2.1\\bouncycastle.cryptography.2.2.1.nupkg.sha512",
     "C:\\Users\\Dausen Bugg\\.nuget\\packages\\google.protobuf\\3.25.1\\google.protobuf.3.25.1.nupkg.sha512",
