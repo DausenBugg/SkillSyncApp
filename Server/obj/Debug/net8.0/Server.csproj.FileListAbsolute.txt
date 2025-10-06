@@ -404,3 +404,4 @@ C:\Users\Dausen Bugg\source\repos\DausenBugg\SkillSyncApp\Server\obj\Debug\net8.
 C:\Users\Dausen Bugg\source\repos\DausenBugg\SkillSyncApp\Server\obj\Debug\net8.0\Server.pdb
 C:\Users\Dausen Bugg\source\repos\DausenBugg\SkillSyncApp\Server\obj\Debug\net8.0\Server.genruntimeconfig.cache
 C:\Users\Dausen Bugg\source\repos\DausenBugg\SkillSyncApp\Server\obj\Debug\net8.0\ref\Server.dll
+C:\Users\Dausen Bugg\source\repos\DausenBugg\SkillSyncApp\Server\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

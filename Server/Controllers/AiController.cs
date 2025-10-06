@@ -25,6 +25,14 @@ namespace Server.Controllers
             _openAiApiKey = openAiOptions.ApiKey ?? "";
         }
 
+        //<summary>
+        //Analyzes a resume and returns job matches, analysis, improvement suggestions, and resources.
+        //</summary>
+        //<param name="request">The resume analysis request containing the resume text.</param>
+        //<returns>
+        //200 OK with analysis results, or 400 BadRequest if resume text is empty, or 500 Server Error on failure.
+        //</returns>
+
         // This endpoint takes a resume and returns job matches, analysis, improvements, and resources.
         [HttpPost("analyze")]
         public async Task<IActionResult> AnalyzeResume([FromBody] ResumeAnalysisRequest request)
