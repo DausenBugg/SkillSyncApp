@@ -5,7 +5,8 @@ using System.Text.Json;
 
 namespace Server.Controllers
 {
-    public record ResumeAnalysisRequest(string ResumeText);
+    // Add jobDescription to the request record
+    public record ResumeAnalysisRequest(string ResumeText, string? JobDescription = null);
     public record JobMatchResult(string Title, string Company, string Url, double MatchScore);
     public record ResumeImprovement(string Suggestion, string ResourceUrl);
 
@@ -62,15 +63,54 @@ namespace Server.Controllers
             }
         }
 
-        // Gets jobs that match the resume (mocked for now)
+        // This method uses OpenAI to suggest jobs for the resume
         private async Task<List<JobMatchResult>> FetchJobMatches(string resume)
         {
+            // Tell the AI to only reply with a JSON array of jobs and companies
+            var prompt = $@"
+            Given this resume:
+            {resume}
+
+            Suggest 3 job titles and companies that would be a good fit for this person.
+            Reply ONLY with a JSON array like:
+            [
+              {{ ""title"": ""Job Title"", ""company"": ""Company Name"" }},
+              ...
+            ]
+            ";
+
+            var response = await CallOpenAi(prompt);
+
+            try
+            {
+                // Try to parse the AI's response as a list of jobs
+                var jobs = JsonSerializer.Deserialize<List<JobSuggestion>>(response ?? "[]");
+                if (jobs != null && jobs.Count > 0)
+                {
+                    // Add a fake URL and match score for each job
+                    return jobs.Select((j, i) => new JobMatchResult(
+                        j.title,
+                        j.company,
+                        $"https://example.com/job/{i + 1}",
+                        0.8 - 0.1 * i // Just for demo
+                    )).ToList();
+                }
+            }
+            catch
+            {
+                // Ignore errors and use fallback below
+            }
+
+            // Fallback: always return at least one job
             return new List<JobMatchResult>
-        {
-            new JobMatchResult("Software Engineer", "TechCorp", "https://indeed.com/job/123", 0.85),
-            new JobMatchResult("Backend Developer", "WebWorks", "https://linkedin.com/job/456", 0.78)
-        };
+            {
+                new JobMatchResult("Software Engineer", "TechCorp", "https://example.com/job/1", 0.85)
+            };
         }
+
+        // Helper record for deserializing OpenAI's job suggestions
+        private record JobSuggestion(string title, string company);
+
 
         // Uses OpenAI to see how related the jobs are to the resume
         private async Task<string> AnalyzeJobRelevance(string resume, List<JobMatchResult> jobs)
