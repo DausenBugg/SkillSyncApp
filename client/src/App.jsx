@@ -233,19 +233,19 @@ const ReportScreen = ({ result }) => {
                 </div>
             </div>
 
-            {/* Resources (if any) */}
-            {result.resources && result.resources.length > 0 && (
-                <div>
-                    <h2 className="text-2xl font-semibold text-green-700 mb-2">Other Resources</h2>
-                    <ul className="space-y-1">
-                        {result.resources.map((url, idx) => (
-                            <li key={idx}>
-                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">{url}</a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+            {/* Resources (if any) */}           
+            <h2 className="text-2xl font-semibold text-green-700 mb-2">Other Resources</h2>             
+            <ul className="list-disc list-inside text-blue-700">
+                <li>
+                    <a href="https://www.coursera.org" target="_blank" rel="noopener noreferrer" className="hover:underline">Coursera</a>
+                </li>
+                <li>
+                    <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:underline">LinkedIn</a>
+                </li>
+                <li>
+                    <a href="https://www.Indeed.com" target="_blank" rel="noopener noreferrer" className="hover:underline">Indeed</a>
+                </li>
+            </ul>
         </div>
     );
 };

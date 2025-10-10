@@ -55,7 +55,7 @@ namespace Server.Controllers
                 var analysis = await AnalyzeJobRelevance(request.ResumeText, request.JobDescription);
 
                 // 4. Suggest improvements
-                var improvements = await SuggestResumeImprovements(request.ResumeText);
+                var improvements = await SuggestResumeImprovements(request.ResumeText, request.JobDescription);
                 var resources = GetImprovementResources(improvements);
 
                 return Ok(new
@@ -117,48 +117,73 @@ namespace Server.Controllers
         // Helper: Uses OpenAI to give feedback on how well the resume matches the job
         private async Task<string> AnalyzeJobRelevance(string resume, string jobDescription)
         {
-            var prompt = $@"Given this resume: {resume}
+            var prompt = $@"
+            Given this resume:
+            {resume}
 
             And this job description:
             {jobDescription}
 
-            How well does the resume match the job? Give a short explanation.";
+            How well does the resume match the job? 
+            - Be honest and critical. 
+            - If the resume does not match the job well, clearly explain why and point out the gaps or missing skills.
+            - If the match is poor, do not be overly positive.
+            - If the match is strong, explain why.
+            - Keep your answer short and direct.";
 
             return await CallOpenAi(prompt);
         }
 
         // Uses OpenAI to suggest improvements for the resume  
-        private async Task<List<ResumeImprovement>> SuggestResumeImprovements(string resume)
+        private async Task<List<ResumeImprovement>> SuggestResumeImprovements(string resume, string jobDescription)
         {
-            // Ask OpenAI for 3 improvement suggestions as a JSON array of strings
-            var prompt = $@"Read this resume: {resume}
-            What are 4 things that could be improved? Reply with a JSON array of short suggestions only. Make it look like this [
-              ""Learn advanced SQL"",
-              ""Improve communication skills"",
-              ""Get certified in project management""
-            ]";
+            // Prompt OpenAI to return a JSON array of objects with "suggestion" and "topic"
+            var prompt = $@"
+            Read this resume:
+            {resume}
+
+            And compare it to this job description:
+            {jobDescription}
+
+            What are 4 things that could be improved? 
+            Reply with a JSON array of objects, each containing:
+            - ""suggestion"": A short description of the improvement.
+            - ""topic"": A single word or short phrase summarizing the topic of the improvement (for use as a search term).
+
+            Example:
+            [
+              {{ ""suggestion"": ""Learn advanced SQL techniques."", ""topic"": ""SQL"" }},
+              {{ ""suggestion"": ""Improve public speaking skills."", ""topic"": ""Public Speaking"" }},
+              {{ ""suggestion"": ""Get certified in project management."", ""topic"": ""Project Management"" }},
+              {{ ""suggestion"": ""Develop leadership abilities."", ""topic"": ""Leadership"" }}
+            ]
+            ";
 
             var response = await CallOpenAi(prompt);
 
-            List<string> suggestions;
+            List<ResumeImprovement> improvements;
             try
             {
-                suggestions = JsonSerializer.Deserialize<List<string>>(response ?? "[]") ?? new List<string>();
+                // Parse the response as a list of objects with "suggestion" and "topic"
+                var suggestions = JsonSerializer.Deserialize<List<Dictionary<string, string>>>(response ?? "[]") ?? new List<Dictionary<string, string>>();
+                improvements = suggestions.Select(s =>
+                    new ResumeImprovement(
+                        s.GetValueOrDefault("suggestion", "No suggestion provided."),
+                        "https://www.coursera.org/",
+                        s.GetValueOrDefault("topic", "General") // Use topic as the search term
+                    )
+                ).ToList();
             }
             catch
             {
-                // If parsing fails, just use the whole response as one suggestion
-                suggestions = new List<string> { response ?? "No suggestions." };
+                // If parsing fails, return a default improvement
+                improvements = new List<ResumeImprovement>
+        {
+            new ResumeImprovement("No suggestions available.", "https://www.coursera.org/", "General")
+        };
             }
 
-            // For each suggestion, provide the Coursera link and the search term
-            return suggestions.Select(s =>
-                new ResumeImprovement(
-                    s,
-                    "https://www.coursera.org/",
-                    s // search term
-                )
-            ).ToList();
+            return improvements;
         }
 
         // Helper: Extracts a list of skills from text using OpenAI
