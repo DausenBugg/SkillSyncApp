@@ -7,8 +7,7 @@ namespace Server.Controllers
 {
     // Add jobDescription to the request record
     public record ResumeAnalysisRequest(string ResumeText, string? JobDescription = null);
-    public record JobMatchResult(string Title, string Company, string Url, double MatchScore);
-    public record ResumeImprovement(string Suggestion, string ResourceUrl);
+    public record ResumeImprovement(string Suggestion, string ResourceUrl, string SearchTerm);
 
     [ApiController]
     [Route("api/[controller]")]
@@ -38,19 +37,32 @@ namespace Server.Controllers
         [HttpPost("analyze")]
         public async Task<IActionResult> AnalyzeResume([FromBody] ResumeAnalysisRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.ResumeText))
-                return BadRequest(new { error = "Resume text cannot be empty." });
+            if (string.IsNullOrWhiteSpace(request.ResumeText) || string.IsNullOrWhiteSpace(request.JobDescription))
+                return BadRequest(new { error = "Resume and job description cannot be empty." });
 
             try
             {
-                var jobs = await FetchJobMatches(request.ResumeText);
-                var analysis = await AnalyzeJobRelevance(request.ResumeText, jobs);
+                // 1. Extract skills from resume and job description using OpenAI
+                var resumeSkills = await ExtractSkillsFromText(request.ResumeText);
+                var jobSkills = await ExtractSkillsFromText(request.JobDescription);
+
+                // 2. Compare skills
+                var (matchingSkills, missingSkills) = await CompareSkillsWithOpenAi(resumeSkills, jobSkills);
+                double matchScore = jobSkills.Count == 0 ? 0 : (double)matchingSkills.Count / jobSkills.Count;
+
+
+                // 3. Get AI feedback
+                var analysis = await AnalyzeJobRelevance(request.ResumeText, request.JobDescription);
+
+                // 4. Suggest improvements
                 var improvements = await SuggestResumeImprovements(request.ResumeText);
                 var resources = GetImprovementResources(improvements);
 
                 return Ok(new
                 {
-                    jobs,
+                    matchScore,
+                    matchingSkills,
+                    missingSkills,
                     analysis,
                     improvements,
                     resources
@@ -63,73 +75,105 @@ namespace Server.Controllers
             }
         }
 
-        // This method uses OpenAI to suggest jobs for the resume
-        private async Task<List<JobMatchResult>> FetchJobMatches(string resume)
+        // This method uses OpenAI to compare two lists of skills and returns which are matching and which are missing.
+        private async Task<(List<string> matching, List<string> missing)> CompareSkillsWithOpenAi(List<string> resumeSkills, List<string> jobSkills)
         {
-            // Tell the AI to only reply with a JSON array of jobs and companies
+            // Build a prompt for OpenAI
             var prompt = $@"
-            Given this resume:
-            {resume}
+            Given these two lists:
+            Resume skills: {JsonSerializer.Serialize(resumeSkills)}
+            Job requirements: {JsonSerializer.Serialize(jobSkills)}
 
-            Suggest 3 job titles and companies that would be a good fit for this person.
-            Reply ONLY with a JSON array like:
-            [
-              {{ ""title"": ""Job Title"", ""company"": ""Company Name"" }},
-              ...
-            ]
+            Which job requirement skills are present in the resume (even if the names are not exactly the same)? 
+            Reply with a JSON object like:
+            {{ 
+              ""matching"": [ ...list of matching job skills... ], 
+              ""missing"": [ ...list of missing job skills... ] 
+            }}
             ";
 
             var response = await CallOpenAi(prompt);
 
+            // Try to parse the response
             try
             {
-                // Try to parse the AI's response as a list of jobs
-                var jobs = JsonSerializer.Deserialize<List<JobSuggestion>>(response ?? "[]");
-                if (jobs != null && jobs.Count > 0)
-                {
-                    // Add a fake URL and match score for each job
-                    return jobs.Select((j, i) => new JobMatchResult(
-                        j.title,
-                        j.company,
-                        $"https://example.com/job/{i + 1}",
-                        0.8 - 0.1 * i // Just for demo
-                    )).ToList();
-                }
+                using var doc = JsonDocument.Parse(response ?? "{}");
+                var root = doc.RootElement;
+                var matching = root.TryGetProperty("matching", out var m) && m.ValueKind == JsonValueKind.Array
+                    ? m.EnumerateArray().Select(x => x.GetString() ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
+                    : new List<string>();
+                var missing = root.TryGetProperty("missing", out var ms) && ms.ValueKind == JsonValueKind.Array
+                    ? ms.EnumerateArray().Select(x => x.GetString() ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
+                    : new List<string>();
+                return (matching, missing);
             }
             catch
             {
-                // Ignore errors and use fallback below
+                // Fallback: return empty lists if parsing fails
+                return (new List<string>(), jobSkills);
             }
-
-            // Fallback: always return at least one job
-            return new List<JobMatchResult>
-            {
-                new JobMatchResult("Software Engineer", "TechCorp", "https://example.com/job/1", 0.85)
-            };
         }
 
-        // Helper record for deserializing OpenAI's job suggestions
-        private record JobSuggestion(string title, string company);
-
-
-        // Uses OpenAI to see how related the jobs are to the resume
-        private async Task<string> AnalyzeJobRelevance(string resume, List<JobMatchResult> jobs)
+        // Helper: Uses OpenAI to give feedback on how well the resume matches the job
+        private async Task<string> AnalyzeJobRelevance(string resume, string jobDescription)
         {
-            var jobTitles = string.Join(", ", jobs.Select(j => j.Title));
-            var prompt = $"Given this resume:\n{resume}\n\nAnd these jobs: {jobTitles}\n\nHow related are they?";
+            var prompt = $@"Given this resume: {resume}
+
+            And this job description:
+            {jobDescription}
+
+            How well does the resume match the job? Give a short explanation.";
+
             return await CallOpenAi(prompt);
         }
 
-        // Uses OpenAI to suggest improvements for the resume
+        // Uses OpenAI to suggest improvements for the resume  
         private async Task<List<ResumeImprovement>> SuggestResumeImprovements(string resume)
         {
-            var prompt = $"Read this resume:\n{resume}\n\nWhat are 3 things that could be improved? Give a short suggestion and a resource link for each.";
+            // Ask OpenAI for 3 improvement suggestions as a JSON array of strings
+            var prompt = $@"Read this resume: {resume}
+            What are 4 things that could be improved? Reply with a JSON array of short suggestions only. Make it look like this [
+              ""Learn advanced SQL"",
+              ""Improve communication skills"",
+              ""Get certified in project management""
+            ]";
+
             var response = await CallOpenAi(prompt);
-            // For now, just return the whole response as one suggestion
-            return new List<ResumeImprovement>
+
+            List<string> suggestions;
+            try
+            {
+                suggestions = JsonSerializer.Deserialize<List<string>>(response ?? "[]") ?? new List<string>();
+            }
+            catch
+            {
+                // If parsing fails, just use the whole response as one suggestion
+                suggestions = new List<string> { response ?? "No suggestions." };
+            }
+
+            // For each suggestion, provide the Coursera link and the search term
+            return suggestions.Select(s =>
+                new ResumeImprovement(
+                    s,
+                    "https://www.coursera.org/",
+                    s // search term
+                )
+            ).ToList();
+        }
+
+        // Helper: Extracts a list of skills from text using OpenAI
+        private async Task<List<string>> ExtractSkillsFromText(string text)
         {
-            new ResumeImprovement(response, "https://www.coursera.org/courses?query=resume")
-        };
+            var prompt = $@"Extract a list of skills from the following text. Reply with a JSON array of skill names only. {text}";
+            var response = await CallOpenAi(prompt);
+            try
+            {
+                return JsonSerializer.Deserialize<List<string>>(response ?? "[]") ?? new List<string>();
+            }
+            catch
+            {
+                return new List<string>();
+            }
         }
 
         // Gets resource links from the improvements

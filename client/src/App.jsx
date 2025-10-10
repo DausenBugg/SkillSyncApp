@@ -160,24 +160,37 @@ Requirements:
 const ReportScreen = ({ result }) => {
     if (!result) return <div>Loading...</div>;
 
-    // Use backend data for jobs, analysis, improvements, and resources
     return (
-        <div className="w-full max-w-5xl mx-auto">
+        <div className="w-full max-w-3xl mx-auto">
             <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Analysis Report</h1>
 
-            {/* Job Matches */}
+            {/* Match Score */}
+            <div className="mb-8 text-center">
+                <span className="text-5xl font-bold text-blue-600">{Math.round(result.matchScore * 100)}%</span>
+                <div className="text-lg text-gray-600">Match Score</div>
+            </div>
+
+            {/* Matching Skills */}
             <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-blue-600 mb-4">Job Matches</h2>
-                <ul className="space-y-2">
-                    {result.jobs?.map((job, idx) => (
-                        <li key={idx} className="flex items-center">
-                            <CheckCircleIcon />
-                            <a href={job.url} target="_blank" rel="noopener noreferrer" className="text-blue-700 font-semibold hover:underline">
-                                {job.title}
-                            </a>
-                            <span className="ml-2 text-gray-600">at {job.company} ({(job.matchScore * 100).toFixed(0)}%)</span>
+                <h2 className="text-2xl font-semibold text-green-600 mb-2">Matching Skills</h2>
+                <ul className="flex flex-wrap gap-2">
+                    {result.matchingSkills?.length > 0 ? result.matchingSkills.map((skill, idx) => (
+                        <li key={idx} className="flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                            <CheckCircleIcon /> {skill}
                         </li>
-                    ))}
+                    )) : <li className="text-gray-500">No matching skills found.</li>}
+                </ul>
+            </div>
+
+            {/* Missing Skills */}
+            <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-yellow-600 mb-2">Missing Skills</h2>
+                <ul className="flex flex-wrap gap-2">
+                    {result.missingSkills?.length > 0 ? result.missingSkills.map((skill, idx) => (
+                        <li key={idx} className="flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">
+                            <XCircleIcon /> {skill}
+                        </li>
+                    )) : <li className="text-gray-500">No missing skills found.</li>}
                 </ul>
             </div>
 
@@ -189,85 +202,50 @@ const ReportScreen = ({ result }) => {
 
             {/* Improvements */}
             <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-yellow-600 mb-2">Improvements</h2>
-                <ul className="space-y-2">
+                <h2 className="text-2xl font-semibold text-yellow-600 mb-4">Improvements & Learning Resources</h2>
+                <div className="grid gap-6 md:grid-cols-2">
                     {result.improvements?.map((imp, idx) => (
-                        <li key={idx} className="flex items-center">
-                            <XCircleIcon />
-                            <span className="mr-2">{imp.suggestion}</span>
-                            <a href={imp.resourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm">
-                                Resource
+                        <div
+                            key={idx}
+                            className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200"
+                        >
+                            <div>
+                                <div className="flex items-center mb-2">
+                                    <svg className="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span className="text-lg font-semibold text-gray-800">{imp.suggestion}</span>
+                                </div>
+                                <p className="text-gray-500 mb-4">
+                                    Improve this skill to boost your match score.
+                                </p>
+                            </div>
+                            <a
+                                href={`https://www.coursera.org/search?query=${encodeURIComponent(imp.searchTerm)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block mt-2 px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition"
+                            >
+                                Search "{imp.searchTerm}" on Coursera
                             </a>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            {/* Resources */}
-            <div>
-                <h2 className="text-2xl font-semibold text-green-700 mb-2">Resources</h2>
-                <ul className="space-y-1">
-                    {result.resources?.map((url, idx) => (
-                        <li key={idx}>
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">{url}</a>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        </div>
-    );
-};
-
-// ResourcesScreen shows learning resources for a skill (static for now)
-const ResourcesScreen = ({ skill, onBack }) => {
-    // These are example resources for each skill
-    const resources = {
-        'SQL': [
-            { title: 'SQL for Beginners', provider: 'Coursera', type: 'Course' },
-            { title: 'Advanced SQL Queries', provider: 'Udemy', type: 'Course' },
-            { title: 'W3Schools SQL Tutorial', provider: 'W3Schools', type: 'Article' },
-        ],
-        'Data Visualization': [
-            { title: 'Data Visualization with Tableau', provider: 'Coursera', type: 'Course' },
-            { title: 'Storytelling with Data', provider: 'LinkedIn Learning', type: 'Course' },
-            { title: 'Fundamentals of Data Visualization', provider: 'Medium', type: 'Article' },
-        ],
-        'Roadmap Planning': [
-            { title: 'Product Roadmap Planning', provider: 'Product School', type: 'Workshop' },
-            { title: 'The Art of the Product Roadmap', provider: 'Mind the Product', type: 'Article' },
-        ]
-    };
-
-    // Get the resources for the selected skill
-    const skillResources = resources[skill] || [];
-
-    return (
-        <div className="w-full max-w-4xl mx-auto">
-            <button onClick={onBack} className="mb-6 text-blue-600 hover:underline">
-                &larr; Back to Report
-            </button>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Learning Resources for: <span className="text-blue-600">{skill}</span>
-            </h1>
-            <p className="text-gray-600 mb-8">
-                Here are some recommended resources to help you learn this skill.
-            </p>
-            <div className="space-y-4">
-                {skillResources.map((resource, index) => (
-                    <div
-                        key={index}
-                        className="bg-white p-5 rounded-lg shadow border border-gray-200 flex items-center justify-between hover:shadow-lg hover:border-blue-400 transition-all"
-                    >
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-800">{resource.title}</h3>
-                            <p className="text-gray-500">Provider: {resource.provider}</p>
                         </div>
-                        <span className="px-3 py-1 text-sm bg-gray-200 text-gray-800 font-medium rounded-full">
-                            {resource.type}
-                        </span>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
+
+            {/* Resources (if any) */}
+            {result.resources && result.resources.length > 0 && (
+                <div>
+                    <h2 className="text-2xl font-semibold text-green-700 mb-2">Other Resources</h2>
+                    <ul className="space-y-1">
+                        {result.resources.map((url, idx) => (
+                            <li key={idx}>
+                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">{url}</a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };
