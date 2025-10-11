@@ -4,8 +4,7 @@
     "\\client",
     "\\client\\src",
     "\\Server",
-    "\\Server\\Controllers",
-    "\\v1Client\\src"
+    "\\Server\\Controllers"
   ],
   "SelectedNode": "\\Server\\Controllers\\AiController.cs",
   "PreviewInSolutionExplorer": false

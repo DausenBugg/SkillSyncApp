@@ -30,7 +30,7 @@ const XCircleIcon = () => (
 // --- Main App Components ---
 
 // Dashboard is the landing page
-const Dashboard = ({ onStart }) => (
+const Dashboard = ({ onStart, user, pastAnalyses }) => (
     <div className="text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Welcome to SkillSync</h1>
         <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
@@ -44,7 +44,20 @@ const Dashboard = ({ onStart }) => (
         </button>
         <div className="mt-12 p-6 border border-gray-200 rounded-lg bg-gray-50">
             <h2 className="text-xl font-semibold text-gray-700">Past Analyses</h2>
-            <p className="mt-2 text-gray-500">You don't have any past analyses yet. Let's create your first one!</p>
+            {user && pastAnalyses.length > 0 ? (
+                <ul className="mt-2 text-left">
+                    {pastAnalyses.map((a, idx) => (
+                        <li key={idx} className="mb-2">
+                            <span className="font-semibold text-blue-700">{a.jobTitle || "Job"}</span>
+                            <span className="ml-2 text-gray-600">Score: {Math.round(a.matchScore * 100)}%</span>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="mt-2 text-gray-500">
+                    {user ? "No past analyses yet." : "Sign in to see your past analyses."}
+                </p>
+            )}
         </div>
     </div>
 );
@@ -233,8 +246,8 @@ const ReportScreen = ({ result }) => {
                 </div>
             </div>
 
-            {/* Resources (if any) */}           
-            <h2 className="text-2xl font-semibold text-green-700 mb-2">Other Resources</h2>             
+            {/* Resources (if any) */}
+            <h2 className="text-2xl font-semibold text-green-700 mb-2">Other Resources</h2>
             <ul className="list-disc list-inside text-blue-700">
                 <li>
                     <a href="https://www.coursera.org" target="_blank" rel="noopener noreferrer" className="hover:underline">Coursera</a>
@@ -250,9 +263,60 @@ const ReportScreen = ({ result }) => {
     );
 };
 
+function SignInModal({ onClose, onSignIn }) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            // Call your backend sign-in endpoint
+            const res = await axios.post('http://localhost:5159/api/auth/login', { email, password });
+            onSignIn(res.data.user, res.data.token);
+            onClose();
+        } catch {
+            setError('Invalid email or password.');
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm">
+                <h2 className="text-2xl font-bold mb-4">Sign In</h2>
+                <input
+                    type="email"
+                    placeholder="Email"
+                    className="w-full mb-3 p-2 border rounded"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    className="w-full mb-3 p-2 border rounded"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                />
+                {error && <div className="text-red-500 mb-2">{error}</div>}
+                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Sign In</button>
+                <button type="button" className="w-full mt-2 text-gray-600" onClick={onClose}>Cancel</button>
+            </form>
+        </div>
+    );
+}
+
 // --- The Main App Component ---
 // This component manages the state and renders the correct screen.
 export default function App() {
+
+    const [user, setUser] = useState(null); // Stores user info
+    const [token, setToken] = useState(null); // Stores JWT or session token
+    const [showSignIn, setShowSignIn] = useState(false); // Controls sign-in modal
+    const [pastAnalyses, setPastAnalyses] = useState([]); // Stores past analyses
+
     // State to manage which page is currently visible
     // 'dashboard', 'input', 'report', 'resources'
     const [page, setPage] = useState('dashboard');
@@ -291,6 +355,42 @@ export default function App() {
         }
     };
 
+    const fetchPastAnalyses = async (token) => {
+        try {
+            const res = await axios.get('http://localhost:5159/api/analysis/mine', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setPastAnalyses(res.data);
+        } catch {
+            setPastAnalyses([]);
+        }
+    };
+
+    const handleAnalyze = async () => {
+        // ...existing code...
+        try {
+            const response = await axios.post("http://localhost:5159/api/ai/analyze", {
+                resumeText,
+                jobDescription
+            });
+            onAnalyze(response.data);
+            // Save to history if signed in
+            if (token) {
+                await axios.post("http://localhost:5159/api/analysis/save", {
+                    resumeText,
+                    jobDescription,
+                    ...response.data
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                fetchPastAnalyses(token);
+            }
+        } catch {
+            setError("There was a problem analyzing your resume. Please try again.");
+        }
+        setLoading(false);
+    };
+
     return (
         <main className="bg-gray-50 min-h-screen font-sans text-gray-900">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -303,8 +403,28 @@ export default function App() {
                         SkillSync
                     </div>
                     <nav>
-                        <a href="#" className="text-gray-600 hover:text-blue-600">Sign In</a>
+                        {user ? (
+                            <span className="text-gray-600">Hello, {user.email}</span>
+                        ) : (
+                            <button
+                                className="text-gray-600 hover:text-blue-600"
+                                onClick={() => setShowSignIn(true)}
+                            >
+                                Sign In
+                            </button>
+                        )}
                     </nav>
+                    {showSignIn && (
+                        <SignInModal
+                            onClose={() => setShowSignIn(false)}
+                            onSignIn={(user, token) => {
+                                setUser(user);
+                                setToken(token);
+                                // Fetch past analyses after sign in
+                                fetchPastAnalyses(token);
+                            }}
+                        />
+                    )}
                 </header>
 
                 {/* Main Content Area */}

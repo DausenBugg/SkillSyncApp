@@ -1,5 +1,8 @@
 using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 // Server/Program.cs
 
@@ -24,6 +27,20 @@ builder.Services.AddCors(options =>
                                 .AllowAnyMethod();
                       });
 });
+
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
 
 // Configure Entity Framework with MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -51,6 +68,9 @@ builder.Services.AddHttpClient("OpenAI", (sp, client) =>
 });
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
