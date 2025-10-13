@@ -291,12 +291,27 @@ function SignInModal({ onClose, onSignIn }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
         try {
+            // Try to register first
+            await axios.post('http://localhost:5159/api/auth/register', { email, password });
+            // Registration successful, now sign in
             const res = await axios.post('http://localhost:5159/api/auth/login', { email, password });
             onSignIn(res.data.user, res.data.token);
             onClose();
-        } catch {
-            setError('Invalid email or password.');
+        } catch (regErr) {
+            // If registration failed because email exists, try to sign in
+            if (regErr.response && regErr.response.data?.error === "Email already registered.") {
+                try {
+                    const res = await axios.post('http://localhost:5159/api/auth/login', { email, password });
+                    onSignIn(res.data.user, res.data.token);
+                    onClose();
+                } catch {
+                    setError('Invalid email or password.');
+                }
+            } else {
+                setError('Registration failed.');
+            }
         }
     };
 

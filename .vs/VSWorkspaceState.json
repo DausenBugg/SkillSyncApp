@@ -9,6 +9,6 @@
     "\\Server\\Migrations",
     "\\Server\\Models"
   ],
-  "SelectedNode": "\\client\\src\\App.jsx",
+  "SelectedNode": "\\Server\\Controllers\\ResumeAnalysisController.cs",
   "PreviewInSolutionExplorer": false
 }

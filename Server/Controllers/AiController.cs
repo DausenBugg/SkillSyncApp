@@ -1,7 +1,9 @@
 // Server/Controllers/AiController.cs
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Server.Controllers
 {
@@ -52,7 +54,7 @@ namespace Server.Controllers
 
 
                 // 3. Get AI feedback
-                var analysis = await AnalyzeJobRelevance(request.ResumeText, request.JobDescription);
+                var analysis = await AnalyzeJobRelevance(request.ResumeText, request.JobDescription, matchingSkills, missingSkills);
 
                 // 4. Suggest improvements
                 var improvements = await SuggestResumeImprovements(request.ResumeText, request.JobDescription);
@@ -85,12 +87,21 @@ namespace Server.Controllers
             Resume skills: {JsonSerializer.Serialize(resumeSkills)}
             Job requirements: {JsonSerializer.Serialize(jobSkills)}
 
-            Which job requirement skills are present in the resume (even if the names are not exactly the same)? 
-            Also, what is the job title for this job description? Reply with a JSON object like:
+            - For each job requirement skill, check if it is present in the resume skills, even if the names are not exactly the same (e.g., synonyms, similar job titles, or related terms).
+            - Don't just check the resume skills section; consider all parts of the resume.
+            - Look through every word in the resume to find implied skills.
+            - Normalize skill names for comparison (e.g., 'Software Developer' and 'Software Engineer' are the same).
+            - List which job requirement skills are matched (present in the resume, directly or as a synonym) and which are missing (not present or not implied).
+            - Also, extract the most likely job title from the job requirements.
+            - Keep your answer concise and to the point.
+            - Make sure to reply in valid JSON format.
+            - The skills may not be stated out right, so use your best judgment to identify implied skills from sentences.
+
+            Reply with a JSON object like:
             {{ 
-              ""matching"": [ ...list of matching job skills... ], 
-              ""missing"": [ ...list of missing job skills... ],
-              ""jobTitle"": ""Put the job description job title here""
+                ""matching"": [ Skill1, Skill2, Skill3, etc. ],  
+                ""missing"": [ Skill1, Skill2, etc. ],
+                ""jobTitle"": ""Put the job description job title here""
             }}
             ";
 
@@ -120,7 +131,7 @@ namespace Server.Controllers
         }
 
         // Helper: Uses OpenAI to give feedback on how well the resume matches the job
-        private async Task<string> AnalyzeJobRelevance(string resume, string jobDescription)
+        private async Task<string> AnalyzeJobRelevance(string resume, string jobDescription, List<string> matchingSkills, List<string> missingSkills)
         {
             var prompt = $@"
             Given this resume:
@@ -128,6 +139,9 @@ namespace Server.Controllers
 
             And this job description:
             {jobDescription}
+
+            The resume has these matching skills: {string.Join(", ", matchingSkills)}
+            The resume is missing these skills: {string.Join(", ", missingSkills)}
 
             How well does the resume match the job? 
             - Be honest and critical. 
@@ -194,7 +208,13 @@ namespace Server.Controllers
         // Helper: Extracts a list of skills from text using OpenAI
         private async Task<List<string>> ExtractSkillsFromText(string text)
         {
-            var prompt = $@"Extract a list of skills from the following text. Reply with a JSON array of skill names only. {text}";
+            var prompt = $@"
+            Extract a list of professional skills, job titles, and technical abilities from the following text. 
+            - Normalize skill names (e.g., 'Software Developer', 'Software Engineer', and 'Programmer' should be considered the same skill: 'Software Engineer').
+            - Include both explicit and implied skills, even if phrased differently or as synonyms.
+            - Reply with a JSON array of unique, normalized skill names only.
+            {text}";
+
             var response = await CallOpenAi(prompt);
             try
             {
