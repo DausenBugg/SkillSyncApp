@@ -19,14 +19,23 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] User user)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest req)
     {
-        if (await _db.Users.AnyAsync(u => u.Email == user.Email))
+        // Check if email is already registered
+        if (await _db.Users.AnyAsync(u => u.Email == req.Email))
             return BadRequest(new { error = "Email already registered." });
 
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+        // Store password as plain text (not recommended for production)
+        var user = new User
+        {
+            Email = req.Email,
+            Password = req.Password,
+            CreatedAt = DateTime.UtcNow
+        };
+
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
+
         return Ok(new { message = "Registered successfully." });
     }
 
@@ -34,7 +43,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] User login)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == login.Email);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(login.PasswordHash, user.PasswordHash))
+        if (user == null || user.Password != login.Password)
             return Unauthorized(new { error = "Invalid credentials." });
 
         var token = GenerateJwtToken(user);
@@ -55,5 +64,11 @@ public class AuthController : ControllerBase
             expires: DateTime.UtcNow.AddDays(7),
             signingCredentials: creds);
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public class RegisterRequest
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
     }
 }

@@ -27,8 +27,6 @@ const XCircleIcon = () => (
     </svg>
 );
 
-// --- Main App Components ---
-
 // Dashboard is the landing page
 const Dashboard = ({ onStart, user, pastAnalyses }) => (
     <div className="text-center">
@@ -62,8 +60,10 @@ const Dashboard = ({ onStart, user, pastAnalyses }) => (
     </div>
 );
 
+// --- Main App Components ---
+
 // InputScreen lets the user upload a resume and paste a job description
-const InputScreen = ({ onAnalyze }) => {
+const InputScreen = ({ onAnalyze, token, setPastAnalyses }) => {
     const [resume, setResume] = useState(null); // Stores the uploaded file
     const [jobDescription, setJobDescription] = useState(''); // Stores the job description text
     const [loading, setLoading] = useState(false); // Shows if analyzing
@@ -95,6 +95,27 @@ const InputScreen = ({ onAnalyze }) => {
                 jobDescription
             });
             onAnalyze(response.data); // Pass result to parent
+
+            // Save to history if signed in
+            if (token) {
+                await axios.post("http://localhost:5159/api/analysis/save", {
+                    ResumeText: resumeText,
+                    JobDescription: jobDescription,
+                    MatchScore: response.data.matchScore ?? 0,
+                    MatchingSkills: JSON.stringify(response.data.matchingSkills ?? []),
+                    MissingSkills: JSON.stringify(response.data.missingSkills ?? []),
+                    Analysis: response.data.analysis ?? "",
+                    Improvements: JSON.stringify(response.data.improvements ?? []),
+                    JobTitle: response.data.jobTitle ?? ""
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                // Optionally refresh past analyses
+                const res = await axios.get('http://localhost:5159/api/analysis/mine', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPastAnalyses(res.data);
+            }
         } catch {
             setError("There was a problem analyzing your resume. Please try again.");
         }
@@ -271,7 +292,6 @@ function SignInModal({ onClose, onSignIn }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Call your backend sign-in endpoint
             const res = await axios.post('http://localhost:5159/api/auth/login', { email, password });
             onSignIn(res.data.user, res.data.token);
             onClose();
@@ -308,28 +328,29 @@ function SignInModal({ onClose, onSignIn }) {
     );
 }
 
-// --- The Main App Component ---
-// This component manages the state and renders the correct screen.
 export default function App() {
-
-    const [user, setUser] = useState(null); // Stores user info
-    const [token, setToken] = useState(null); // Stores JWT or session token
-    const [showSignIn, setShowSignIn] = useState(false); // Controls sign-in modal
-    const [pastAnalyses, setPastAnalyses] = useState([]); // Stores past analyses
-
-    // State to manage which page is currently visible
-    // 'dashboard', 'input', 'report', 'resources'
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(null);
+    const [showSignIn, setShowSignIn] = useState(false);
+    const [pastAnalyses, setPastAnalyses] = useState([]);
     const [page, setPage] = useState('dashboard');
-
-    // State to store the skill selected for finding resources
     const [selectedSkill, setSelectedSkill] = useState(null);
-
-    // State to store the analysis result from the backend
     const [analysisResult, setAnalysisResult] = useState(null);
 
-    // Navigation functions using useCallback for performance
+    // Fetch past analyses for the signed-in user
+    const fetchPastAnalyses = async (jwt) => {
+        try {
+            const res = await axios.get('http://localhost:5159/api/analysis/mine', {
+                headers: { Authorization: `Bearer ${jwt}` }
+            });
+            setPastAnalyses(res.data);
+        } catch {
+            setPastAnalyses([]);
+        }
+    };
+
+    // Navigation functions
     const navigateToInput = useCallback(() => setPage('input'), []);
-    // When analysis is done, save the result and go to report
     const navigateToReport = useCallback((result) => {
         setAnalysisResult(result);
         setPage('report');
@@ -340,55 +361,35 @@ export default function App() {
         setPage('resources');
     }, []);
 
-    // Function to render the correct component based on the current page state
+    // Render correct page
     const renderPage = () => {
         switch (page) {
             case 'input':
-                return <InputScreen onAnalyze={navigateToReport} />;
+                return <InputScreen onAnalyze={navigateToReport} token={token} setPastAnalyses={setPastAnalyses} />;
             case 'report':
                 return <ReportScreen result={analysisResult} onFindResources={navigateToResources} />;
             case 'resources':
                 return <ResourcesScreen skill={selectedSkill} onBack={() => setPage('report')} />;
             case 'dashboard':
             default:
-                return <Dashboard onStart={navigateToInput} />;
+                return <Dashboard onStart={navigateToInput} user={user} pastAnalyses={pastAnalyses} />;
         }
     };
 
-    const fetchPastAnalyses = async (token) => {
-        try {
-            const res = await axios.get('http://localhost:5159/api/analysis/mine', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setPastAnalyses(res.data);
-        } catch {
-            setPastAnalyses([]);
-        }
+    // Handle sign in: set user/token, fetch analyses, go to dashboard
+    const handleSignIn = async (userObj, jwt) => {
+        setUser(userObj);
+        setToken(jwt);
+        setShowSignIn(false);
+        await fetchPastAnalyses(jwt);
+        setPage('dashboard');
     };
 
-    const handleAnalyze = async () => {
-        // ...existing code...
-        try {
-            const response = await axios.post("http://localhost:5159/api/ai/analyze", {
-                resumeText,
-                jobDescription
-            });
-            onAnalyze(response.data);
-            // Save to history if signed in
-            if (token) {
-                await axios.post("http://localhost:5159/api/analysis/save", {
-                    resumeText,
-                    jobDescription,
-                    ...response.data
-                }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                fetchPastAnalyses(token);
-            }
-        } catch {
-            setError("There was a problem analyzing your resume. Please try again.");
-        }
-        setLoading(false);
+    // Handle logout: clear user/token/analyses, go to dashboard
+    const handleLogout = () => {
+        setUser(null);
+        setPastAnalyses([]);
+        setPage('dashboard');
     };
 
     return (
@@ -404,7 +405,12 @@ export default function App() {
                     </div>
                     <nav>
                         {user ? (
-                            <span className="text-gray-600">Hello, {user.email}</span>
+                            <button
+                                className="text-gray-600 hover:text-blue-600"
+                                onClick={handleLogout}
+                            >
+                                Log Out
+                            </button>
                         ) : (
                             <button
                                 className="text-gray-600 hover:text-blue-600"
@@ -417,12 +423,7 @@ export default function App() {
                     {showSignIn && (
                         <SignInModal
                             onClose={() => setShowSignIn(false)}
-                            onSignIn={(user, token) => {
-                                setUser(user);
-                                setToken(token);
-                                // Fetch past analyses after sign in
-                                fetchPastAnalyses(token);
-                            }}
+                            onSignIn={handleSignIn}
                         />
                     )}
                 </header>

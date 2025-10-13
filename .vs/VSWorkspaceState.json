@@ -4,8 +4,11 @@
     "\\client",
     "\\client\\src",
     "\\Server",
-    "\\Server\\Controllers"
+    "\\Server\\Controllers",
+    "\\Server\\Data",
+    "\\Server\\Migrations",
+    "\\Server\\Models"
   ],
-  "SelectedNode": "\\Server\\Controllers\\AiController.cs",
+  "SelectedNode": "\\client\\src\\App.jsx",
   "PreviewInSolutionExplorer": false
 }

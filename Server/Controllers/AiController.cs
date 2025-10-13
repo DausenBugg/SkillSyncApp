@@ -47,7 +47,7 @@ namespace Server.Controllers
                 var jobSkills = await ExtractSkillsFromText(request.JobDescription);
 
                 // 2. Compare skills
-                var (matchingSkills, missingSkills) = await CompareSkillsWithOpenAi(resumeSkills, jobSkills);
+                var (matchingSkills, missingSkills, jobTitle) = await CompareSkillsWithOpenAi(resumeSkills, jobSkills);
                 double matchScore = jobSkills.Count == 0 ? 0 : (double)matchingSkills.Count / jobSkills.Count;
 
 
@@ -65,7 +65,8 @@ namespace Server.Controllers
                     missingSkills,
                     analysis,
                     improvements,
-                    resources
+                    resources,
+                    jobTitle
                 });
             }
             catch (Exception ex)
@@ -76,7 +77,7 @@ namespace Server.Controllers
         }
 
         // This method uses OpenAI to compare two lists of skills and returns which are matching and which are missing.
-        private async Task<(List<string> matching, List<string> missing)> CompareSkillsWithOpenAi(List<string> resumeSkills, List<string> jobSkills)
+        private async Task<(List<string> matching, List<string> missing, string jobTitle)> CompareSkillsWithOpenAi(List<string> resumeSkills, List<string> jobSkills)
         {
             // Build a prompt for OpenAI
             var prompt = $@"
@@ -85,10 +86,11 @@ namespace Server.Controllers
             Job requirements: {JsonSerializer.Serialize(jobSkills)}
 
             Which job requirement skills are present in the resume (even if the names are not exactly the same)? 
-            Reply with a JSON object like:
+            Also, what is the job title for this job description? Reply with a JSON object like:
             {{ 
               ""matching"": [ ...list of matching job skills... ], 
-              ""missing"": [ ...list of missing job skills... ] 
+              ""missing"": [ ...list of missing job skills... ],
+              ""jobTitle"": ""Put the job description job title here""
             }}
             ";
 
@@ -105,12 +107,15 @@ namespace Server.Controllers
                 var missing = root.TryGetProperty("missing", out var ms) && ms.ValueKind == JsonValueKind.Array
                     ? ms.EnumerateArray().Select(x => x.GetString() ?? "").Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
                     : new List<string>();
-                return (matching, missing);
+                var jobTitle = root.TryGetProperty("jobTitle", out var jt) && jt.ValueKind == JsonValueKind.String
+                    ? jt.GetString() ?? ""
+                    : "";
+                return (matching, missing, jobTitle);
             }
             catch
             {
                 // Fallback: return empty lists if parsing fails
-                return (new List<string>(), jobSkills);
+                return (new List<string>(), jobSkills, "");
             }
         }
 

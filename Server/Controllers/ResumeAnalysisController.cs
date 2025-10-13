@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/analysis")]
@@ -26,9 +24,9 @@ public class ResumeAnalysisController : ControllerBase
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
 
-        // Return only summary info for dashboard
         return Ok(analyses.Select(a => new {
             a.Id,
+            a.JobTitle,
             a.JobDescription,
             a.MatchScore,
             a.CreatedAt
