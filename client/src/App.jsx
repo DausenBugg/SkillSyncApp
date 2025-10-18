@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
+import mammoth from 'mammoth';
 
 // --- Helper Components for Icons ---
 
@@ -72,12 +73,22 @@ const InputScreen = ({ onAnalyze, token, setPastAnalyses }) => {
     // This runs when the user picks a file
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file && file.type === "text/plain") {
+        if (
+            file &&
+            (
+                file.type === "text/plain" ||
+                file.type === "application/pdf" ||
+                file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+                file.name.endsWith(".txt") ||
+                file.name.endsWith(".pdf") ||
+                file.name.endsWith(".docx")
+            )
+        ) {
             setResume(file);
             setError('');
         } else {
             setResume(null);
-            setError("Please upload a .txt file for now.");
+            setError("Please upload a .txt, .pdf, or .docx file.");
         }
     };
 
@@ -86,8 +97,18 @@ const InputScreen = ({ onAnalyze, token, setPastAnalyses }) => {
         setLoading(true);
         setError('');
         let resumeText = '';
+
         if (resume) {
-            resumeText = await resume.text();
+            if (resume.type === "text/plain" || resume.name.endsWith(".txt")) {
+                resumeText = await resume.text();
+            } else if (
+                resume.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+                resume.name.endsWith(".docx")
+            ) {
+                const arrayBuffer = await resume.arrayBuffer();
+                const { value } = await mammoth.extractRawText({ arrayBuffer });
+                resumeText = value;
+            }
         }
         try {
             const response = await axios.post("http://localhost:5159/api/ai/analyze", {
@@ -149,11 +170,17 @@ Requirements:
                         {resume ? (
                             <span className="text-green-600 font-semibold">{resume.name}</span>
                         ) : (
-                            <span className="text-gray-500">Click to upload a .txt file</span>
+                            <span className="text-gray-500">Click to upload a .txt or .docx file</span>
                         )}
-                        <p className="text-xs text-gray-400 mt-1">TXT only</p>
+                        <p className="text-xs text-gray-400 mt-1">TXT and DOCX only</p>
                     </label>
-                    <input id="resume-upload" type="file" className="hidden" onChange={handleFileChange} accept=".txt" />
+                    <input
+                        id="resume-upload"
+                        type="file"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        accept=".txt,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    />
                 </div>
 
                 {/* Job Description Section */}

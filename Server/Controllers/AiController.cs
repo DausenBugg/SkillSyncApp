@@ -213,6 +213,8 @@ namespace Server.Controllers
             - Normalize skill names (e.g., 'Software Developer', 'Software Engineer', and 'Programmer' should be considered the same skill: 'Software Engineer').
             - Include both explicit and implied skills, even if phrased differently or as synonyms.
             - Reply with a JSON array of unique, normalized skill names only.
+            - Don't include any extra text outside the json format.
+            - Make sure to enclose the entire skill list inside [].
             {text}";
 
             var response = await CallOpenAi(prompt);
@@ -240,7 +242,7 @@ namespace Server.Controllers
             {
                 model = "gpt-3.5-turbo",
                 messages = new[] { new { role = "user", content = prompt } },
-                max_tokens = 200,
+                max_tokens = 400,
                 temperature = 0.3
             };
             var reqJson = JsonSerializer.Serialize(reqObj);
