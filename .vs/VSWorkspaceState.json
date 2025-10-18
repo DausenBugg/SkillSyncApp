@@ -1,14 +1,6 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\client",
-    "\\client\\src",
-    "\\Server",
-    "\\Server\\Controllers",
-    "\\Server\\Data",
-    "\\Server\\Migrations",
-    "\\Server\\Models"
+    ""
   ],
-  "SelectedNode": "\\Server\\Controllers\\ResumeAnalysisController.cs",
   "PreviewInSolutionExplorer": false
 }
