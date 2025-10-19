@@ -296,15 +296,15 @@ const ReportScreen = ({ result }) => {
 
             {/* Resources (if any) */}
             <h2 className="text-2xl font-semibold text-green-700 mb-2">Other Resources</h2>
-            <ul className="list-disc list-inside text-blue-700">
+            <ul className="grid gap-1.5 md:grid-cols-3 text-blue-700 text-center">
                 <li>
-                    <a href="https://www.coursera.org" target="_blank" rel="noopener noreferrer" className="hover:underline">Coursera</a>
+                    <a href="https://www.coursera.org" target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200 hover:bg-blue-100 font-bold">Coursera</a>
                 </li>
                 <li>
-                    <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:underline">LinkedIn</a>
+                    <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200 hover:bg-blue-100 font-bold">LinkedIn</a>
                 </li>
                 <li>
-                    <a href="https://www.Indeed.com" target="_blank" rel="noopener noreferrer" className="hover:underline">Indeed</a>
+                    <a href="https://www.Indeed.com" target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200 hover:bg-blue-100 font-bold">Indeed</a>
                 </li>
             </ul>
         </div>
