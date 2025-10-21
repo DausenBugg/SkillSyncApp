@@ -345,7 +345,7 @@ function SignInModal({ onClose, onSignIn }) {
     return (
         <div className="fixed inset-0 bg-opacity-30 backdrop-blur-md flex items-center justify-center z-50">
             <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm">
-                <h2 className="text-2xl font-bold mb-4">Sign In</h2>
+                <h2 className="text-2xl font-bold mb-4">Register / Sign In</h2>
                 <input
                     type="email"
                     placeholder="Email"
@@ -363,7 +363,7 @@ function SignInModal({ onClose, onSignIn }) {
                     required
                 />
                 {error && <div className="text-red-500 mb-2">{error}</div>}
-                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Sign In</button>
+                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Register / Sign In</button>
                 <button type="button" className="w-full mt-2 text-gray-600" onClick={onClose}>Cancel</button>
             </form>
         </div>
@@ -458,7 +458,7 @@ export default function App() {
                                 className="text-gray-600 hover:text-blue-600"
                                 onClick={() => setShowSignIn(true)}
                             >
-                                Sign In
+                                Register / Sign In
                             </button>
                         )}
                     </nav>
