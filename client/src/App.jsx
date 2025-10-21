@@ -343,7 +343,7 @@ function SignInModal({ onClose, onSignIn }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-opacity-30 backdrop-blur-md flex items-center justify-center z-50">
             <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm">
                 <h2 className="text-2xl font-bold mb-4">Sign In</h2>
                 <input

@@ -96,6 +96,7 @@ namespace Server.Controllers
             - Keep your answer concise and to the point.
             - Make sure to reply in valid JSON format.
             - The skills may not be stated out right, so use your best judgment to identify implied skills from sentences.
+            - Ignore physical capability skills.
 
             Reply with a JSON object like:
             {{ 
