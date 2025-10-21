@@ -149,7 +149,7 @@ namespace Server.Controllers
             - If the resume does not match the job well, clearly explain why and point out the gaps or missing skills.
             - If the match is poor, do not be overly positive.
             - If the match is strong, explain why.
-            - Keep your answer short and direct.";
+            - Provide 2 paragraphs worth of feedback if possible.";
 
             return await CallOpenAi(prompt);
         }
