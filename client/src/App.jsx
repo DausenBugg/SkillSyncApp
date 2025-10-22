@@ -29,26 +29,26 @@ const XCircleIcon = () => (
 );
 
 // Dashboard is the landing page
-const Dashboard = ({ onStart, user, pastAnalyses }) => (
-    <div className="text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Welcome to SkillSync</h1>
-        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+const Dashboard = ({ onStart, user, pastAnalyses, darkMode }) => (
+    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-800'} text-center rounded-lg p-6`}>
+        <h1 className={`text-4xl md:text-5xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Welcome to SkillSync</h1>
+        <p className={`mt-4 text-lg max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
             Close the gap between your skills and your dream job. Analyze your resume against any job description to get actionable insights.
         </p>
         <button
             onClick={onStart}
-            className="mt-8 px-8 py-4 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
+            className={`mt-8 px-8 py-4 font-bold rounded-lg shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 ${darkMode ? 'bg-blue-700 text-white hover:bg-blue-800 focus:ring-blue-400' : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300'}`}
         >
             Start New Analysis
         </button>
-        <div className="mt-12 p-6 border border-gray-200 rounded-lg bg-gray-50">
-            <h2 className="text-xl font-semibold text-gray-700">Past Analyses</h2>
+        <div className={`mt-12 p-6 rounded-lg ${darkMode ? 'border border-gray-700 bg-gray-900' : 'border border-gray-200 bg-gray-50'}`}>
+            <h2 className={`text-xl font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Past Analyses</h2>
             {user && pastAnalyses.length > 0 ? (
                 <ul className="mt-2 text-left">
                     {pastAnalyses.map((a, idx) => (
                         <li key={idx} className="mb-2">
                             <span className="font-semibold text-blue-700">{a.jobTitle || "Job"}</span>
-                            <span className="ml-2 text-gray-600">Score: {Math.round(a.matchScore * 100)}%</span>
+                            <span className="ml-2 text-gray-400">Score: {Math.round(a.matchScore * 100)}%</span>
                         </li>
                     ))}
                 </ul>
@@ -64,7 +64,7 @@ const Dashboard = ({ onStart, user, pastAnalyses }) => (
 // --- Main App Components ---
 
 // InputScreen lets the user upload a resume and paste a job description
-const InputScreen = ({ onAnalyze, token, setPastAnalyses }) => {
+const InputScreen = ({ onAnalyze, token, setPastAnalyses, darkMode }) => {
     const [resume, setResume] = useState(null); // Stores the uploaded file
     const [jobDescription, setJobDescription] = useState(''); // Stores the job description text
     const [loading, setLoading] = useState(false); // Shows if analyzing
@@ -160,12 +160,12 @@ Requirements:
 
     return (
         <div className="w-full max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Create New Analysis</h1>
+            <h1 className={`text-3xl font-bold text-center mb-8 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Create New Analysis</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Resume Upload Section */}
-                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                    <h2 className="text-2xl font-semibold text-gray-700 mb-4">1. Your Resume</h2>
-                    <label htmlFor="resume-upload" className="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col justify-center items-center cursor-pointer hover:bg-gray-50 hover:border-blue-500 transition-colors">
+                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-6 rounded-lg shadow-md border`}>
+                    <h2 className={`text-2xl font-semibold mb-4 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>1. Your Resume</h2>
+                    <label htmlFor="resume-upload" className={`w-full h-48 border-2 border-dashed rounded-lg flex flex-col justify-center items-center cursor-pointer transition-colors ${darkMode ? 'border-gray-600 hover:bg-gray-900 hover:border-blue-400' : 'border-gray-300 hover:bg-gray-50 hover:border-blue-500'}`}>
                         <UploadIcon />
                         {resume ? (
                             <span className="text-green-600 font-semibold">{resume.name}</span>
@@ -184,20 +184,20 @@ Requirements:
                 </div>
 
                 {/* Job Description Section */}
-                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                    <h2 className="text-2xl font-semibold text-gray-700 mb-4">2. Job Description</h2>
+                <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-6 rounded-lg shadow-md border`}>
+                    <h2 className={`text-2xl font-semibold mb-4 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>2. Job Description</h2>
                     <div className="flex items-start">
                         <ClipboardIcon />
                         <textarea
-                            className="w-full h-48 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                            className={`w-full h-48 p-2 rounded-lg transition ${darkMode ? 'bg-gray-800 text-gray-100 border-gray-600 focus:ring-blue-400 focus:border-blue-400' : 'bg-white text-gray-800 border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
                             placeholder="Paste the job description here..."
                             value={jobDescription}
                             onChange={(e) => setJobDescription(e.target.value)}
                         ></textarea>
                     </div>
                     <button
+                        className={`text-sm mt-2 ${darkMode ? 'text-blue-400 hover:underline' : 'text-blue-600 hover:underline'}`}
                         onClick={() => setJobDescription(exampleJobDescription)}
-                        className="text-sm text-blue-600 hover:underline mt-2"
                     >
                         Use example job description
                     </button>
@@ -207,7 +207,7 @@ Requirements:
                 <button
                     onClick={handleAnalyze}
                     disabled={!resume || !jobDescription || loading}
-                    className="px-10 py-4 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100"
+                    className={`px-10 py-4 font-bold rounded-lg shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:scale-100 ${darkMode ? 'bg-blue-700 text-white hover:bg-blue-800 focus:ring-blue-400' : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300'}`}
                 >
                     {loading ? "Analyzing..." : "Analyze Now"}
                 </button>
@@ -218,22 +218,22 @@ Requirements:
 };
 
 // ReportScreen shows the backend's analysis results
-const ReportScreen = ({ result }) => {
+const ReportScreen = ({ result, darkMode }) => {
     if (!result) return <div>Loading...</div>;
 
     return (
-        <div className="w-full max-w-3xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Analysis Report</h1>
+        <div className={`w-full max-w-3xl mx-auto ${darkMode ? 'bg-gray-900 text-gray-100' : ''}`}>
+            <h1 className={`text-3xl font-bold text-center mb-8 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Analysis Report</h1>
 
             {/* Match Score */}
             <div className="mb-8 text-center">
-                <span className="text-5xl font-bold text-blue-600">{Math.round(result.matchScore * 100)}%</span>
-                <div className="text-lg text-gray-600">Match Score</div>
+                <span className={`text-5xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{Math.round(result.matchScore * 100)}%</span>
+                <div className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Match Score</div>
             </div>
 
             {/* Matching Skills */}
             <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-green-600 mb-2">Matching Skills</h2>
+                <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>Matching Skills</h2>
                 <ul className="flex flex-wrap gap-2">
                     {result.matchingSkills?.length > 0 ? result.matchingSkills.map((skill, idx) => (
                         <li key={idx} className="flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full">
@@ -245,7 +245,7 @@ const ReportScreen = ({ result }) => {
 
             {/* Missing Skills */}
             <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-yellow-600 mb-2">Missing Skills</h2>
+                <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>Missing Skills</h2>
                 <ul className="flex flex-wrap gap-2">
                     {result.missingSkills?.length > 0 ? result.missingSkills.map((skill, idx) => (
                         <li key={idx} className="flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">
@@ -257,25 +257,25 @@ const ReportScreen = ({ result }) => {
 
             {/* AI Feedback */}
             <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-700 mb-2">AI Feedback</h2>
-                <p className="bg-gray-100 p-4 rounded">{result.analysis}</p>
+                <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>AI Feedback</h2>
+                <p className={`p-4 rounded ${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`}>{result.analysis}</p>
             </div>
 
             {/* Improvements */}
             <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-yellow-600 mb-4">Improvements & Learning Resources</h2>
+                <h2 className={`text-2xl font-semibold mb-4 ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>Improvements & Learning Resources</h2>
                 <div className="grid gap-6 md:grid-cols-2">
                     {result.improvements?.map((imp, idx) => (
                         <div
                             key={idx}
-                            className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200"
+                            className={`rounded-2xl shadow-md border p-6 flex flex-col justify-between transition hover:shadow-lg ${darkMode ? 'bg-gray-800 border-gray-700 hover:border-blue-400' : 'bg-white border-gray-100 hover:border-blue-200'}`}
                         >
                             <div>
                                 <div className="flex items-center mb-2">
                                     <svg className="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    <span className="text-lg font-semibold text-gray-800">{imp.suggestion}</span>
+                                    <span className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{imp.suggestion}</span>
                                 </div>
                                 <p className="text-gray-500 mb-4">
                                     Improve this skill to boost your match score.
@@ -295,23 +295,23 @@ const ReportScreen = ({ result }) => {
             </div>
 
             {/* Resources (if any) */}
-            <h2 className="text-2xl font-semibold text-green-700 mb-2">Other Resources</h2>
+            <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>Other Resources</h2>
             <ul className="grid gap-1.5 md:grid-cols-3 text-blue-700 text-center">
                 <li>
-                    <a href="https://www.coursera.org" target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200 hover:bg-blue-100 font-bold">Coursera</a>
+                    <a href="https://www.coursera.org" target="_blank" rel="noopener noreferrer" className={`rounded-2xl shadow-md border p-6 flex flex-col justify-between transition font-bold ${darkMode ? 'bg-gray-800 border-gray-700 hover:bg-blue-900 hover:border-blue-400 text-blue-300' : 'bg-white border-gray-100 hover:bg-blue-100 hover:border-blue-200 text-blue-700'}`}>Coursera</a>
                 </li>
                 <li>
-                    <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200 hover:bg-blue-100 font-bold">LinkedIn</a>
+                    <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className={`rounded-2xl shadow-md border p-6 flex flex-col justify-between transition font-bold ${darkMode ? 'bg-gray-800 border-gray-700 hover:bg-blue-900 hover:border-blue-400 text-blue-300' : 'bg-white border-gray-100 hover:bg-blue-100 hover:border-blue-200 text-blue-700'}`}>LinkedIn</a>
                 </li>
                 <li>
-                    <a href="https://www.Indeed.com" target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 flex flex-col justify-between transition hover:shadow-lg hover:border-blue-200 hover:bg-blue-100 font-bold">Indeed</a>
+                    <a href="https://www.Indeed.com" target="_blank" rel="noopener noreferrer" className={`rounded-2xl shadow-md border p-6 flex flex-col justify-between transition font-bold ${darkMode ? 'bg-gray-800 border-gray-700 hover:bg-blue-900 hover:border-blue-400 text-blue-300' : 'bg-white border-gray-100 hover:bg-blue-100 hover:border-blue-200 text-blue-700'}`}>Indeed</a>
                 </li>
             </ul>
         </div>
     );
 };
 
-function SignInModal({ onClose, onSignIn }) {
+function SignInModal({ onClose, onSignIn, darkMode }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -344,12 +344,12 @@ function SignInModal({ onClose, onSignIn }) {
 
     return (
         <div className="fixed inset-0 bg-opacity-30 backdrop-blur-md flex items-center justify-center z-50">
-            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm">
-                <h2 className="text-2xl font-bold mb-4">Register / Sign In</h2>
+            <form onSubmit={handleSubmit} className={`rounded-xl shadow-lg p-8 w-full max-w-sm border ${darkMode ? 'bg-gray-900 text-gray-100 border-gray-700' : 'bg-white text-gray-900 border-gray-200'}`}>
+                <h2 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Register / Sign In</h2>
                 <input
                     type="email"
                     placeholder="Email"
-                    className="w-full mb-3 p-2 border rounded"
+                    className={`w-full mb-3 p-2 border rounded transition ${darkMode ? 'bg-gray-800 text-gray-100 border-gray-700 placeholder-gray-400' : 'bg-white text-gray-900 border-gray-300 placeholder-gray-500'}`}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
@@ -357,14 +357,14 @@ function SignInModal({ onClose, onSignIn }) {
                 <input
                     type="password"
                     placeholder="Password"
-                    className="w-full mb-3 p-2 border rounded"
+                    className={`w-full mb-3 p-2 border rounded transition ${darkMode ? 'bg-gray-800 text-gray-100 border-gray-700 placeholder-gray-400' : 'bg-white text-gray-900 border-gray-300 placeholder-gray-500'}`}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
                 />
                 {error && <div className="text-red-500 mb-2">{error}</div>}
-                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">Register / Sign In</button>
-                <button type="button" className="w-full mt-2 text-gray-600" onClick={onClose}>Cancel</button>
+                <button type="submit" className={`w-full py-2 rounded font-bold transition ${darkMode ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>Register / Sign In</button>
+                <button type="button" className={`w-full mt-2 rounded transition ${darkMode ? 'bg-gray-900 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-200'}`} onClick={onClose}>Cancel</button>
             </form>
         </div>
     );
@@ -378,6 +378,7 @@ export default function App() {
     const [page, setPage] = useState('dashboard');
     const [selectedSkill, setSelectedSkill] = useState(null);
     const [analysisResult, setAnalysisResult] = useState(null);
+    const [darkMode, setDarkMode] = useState(false);
 
     // Fetch past analyses for the signed-in user
     const fetchPastAnalyses = async (jwt) => {
@@ -407,14 +408,14 @@ export default function App() {
     const renderPage = () => {
         switch (page) {
             case 'input':
-                return <InputScreen onAnalyze={navigateToReport} token={token} setPastAnalyses={setPastAnalyses} />;
+                return <InputScreen onAnalyze={navigateToReport} token={token} setPastAnalyses={setPastAnalyses} darkMode={darkMode} />;
             case 'report':
-                return <ReportScreen result={analysisResult} onFindResources={navigateToResources} />;
+                return <ReportScreen result={analysisResult} onFindResources={navigateToResources} darkMode={darkMode} />;
             case 'resources':
-                return <ResourcesScreen skill={selectedSkill} onBack={() => setPage('report')} />;
+                return <ResourcesScreen skill={selectedSkill} onBack={() => setPage('report')} darkMode={darkMode} />;
             case 'dashboard':
             default:
-                return <Dashboard onStart={navigateToInput} user={user} pastAnalyses={pastAnalyses} />;
+                return <Dashboard onStart={navigateToInput} user={user} pastAnalyses={pastAnalyses} darkMode={darkMode} />;
         }
     };
 
@@ -435,27 +436,33 @@ export default function App() {
     };
 
     return (
-        <main className="bg-gray-50 min-h-screen font-sans text-gray-900">
+        <main className={`${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'} min-h-screen font-sans`}>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <header className="py-6 flex justify-between items-center">
                     <div
-                        className="text-2xl font-bold text-blue-600 cursor-pointer"
+                        className={`text-2xl font-bold cursor-pointer ${darkMode ? 'text-blue-300' : 'text-blue-600'}`}
                         onClick={navigateToDashboard}
                     >
                         SkillSync
                     </div>
-                    <nav>
+                    <nav className="flex items-center gap-4">
+                        <button
+                            className={`px-3 py-2 rounded transition ${darkMode ? 'bg-gray-800 text-gray-100 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                            onClick={() => setDarkMode(!darkMode)}
+                        >
+                            {darkMode ? 'Light Mode' : 'Dark Mode'}
+                        </button>
                         {user ? (
                             <button
-                                className="text-gray-600 hover:text-blue-600"
+                                className={`text-gray-600 hover:text-blue-600 ${darkMode ? 'text-gray-300 hover:text-blue-300' : ''}`}
                                 onClick={handleLogout}
                             >
                                 Log Out
                             </button>
                         ) : (
                             <button
-                                className="text-gray-600 hover:text-blue-600"
+                                className={`text-gray-600 hover:text-blue-600 ${darkMode ? 'text-gray-300 hover:text-blue-300' : ''}`}
                                 onClick={() => setShowSignIn(true)}
                             >
                                 Register / Sign In
@@ -466,6 +473,7 @@ export default function App() {
                         <SignInModal
                             onClose={() => setShowSignIn(false)}
                             onSignIn={handleSignIn}
+                            darkMode={darkMode}
                         />
                     )}
                 </header>
