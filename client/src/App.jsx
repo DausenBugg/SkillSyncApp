@@ -29,7 +29,7 @@ const XCircleIcon = () => (
 );
 
 // Dashboard is the landing page
-const Dashboard = ({ onStart, user, pastAnalyses, darkMode }) => (
+const Dashboard = ({ onStart, user, pastAnalyses, darkMode, onSelectAnalysis }) => (
     <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-800'} text-center rounded-lg p-6`}>
         <h1 className={`text-4xl md:text-5xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>Welcome to SkillSync</h1>
         <p className={`mt-4 text-lg max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -46,7 +46,7 @@ const Dashboard = ({ onStart, user, pastAnalyses, darkMode }) => (
             {user && pastAnalyses.length > 0 ? (
                 <ul className="mt-2 text-left">
                     {pastAnalyses.map((a, idx) => (
-                        <li key={idx} className="mb-2">
+                        <li key={idx} className={`mb-2 cursor-pointer rounded px-2 py-1 transition ${darkMode ? 'hover:bg-blue-50' : 'hover:bg-blue-200'}`} onClick={() => onSelectAnalysis(a.id)}>
                             <span className="font-semibold text-blue-700">{a.jobTitle || "Job"}</span>
                             <span className="ml-2 text-gray-400">Score: {Math.round(a.matchScore * 100)}%</span>
                         </li>
@@ -189,7 +189,7 @@ Requirements:
                     <div className="flex items-start">
                         <ClipboardIcon />
                         <textarea
-                            className={`w-full h-48 p-2 rounded-lg transition ${darkMode ? 'bg-gray-800 text-gray-100 border-gray-600 focus:ring-blue-400 focus:border-blue-400' : 'bg-white text-gray-800 border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
+                            className={`w-full h-48 p-2 rounded-lg transition ${darkMode ? 'bg-gray-700 text-gray-100 border-gray-600 focus:ring-blue-400 focus:border-blue-400' : 'bg-gray-100 text-gray-800 border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
                             placeholder="Paste the job description here..."
                             value={jobDescription}
                             onChange={(e) => setJobDescription(e.target.value)}
@@ -392,6 +392,19 @@ export default function App() {
         }
     };
 
+    const handleSelectAnalysis = async (id) => {
+        if (!token) return;
+        try {
+            const res = await axios.get(`http://localhost:5159/api/analysis/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAnalysisResult(res.data);
+            setPage('report');
+        } catch {
+            // Do Nothing
+        }
+    };
+
     // Navigation functions
     const navigateToInput = useCallback(() => setPage('input'), []);
     const navigateToReport = useCallback((result) => {
@@ -415,7 +428,7 @@ export default function App() {
                 return <ResourcesScreen skill={selectedSkill} onBack={() => setPage('report')} darkMode={darkMode} />;
             case 'dashboard':
             default:
-                return <Dashboard onStart={navigateToInput} user={user} pastAnalyses={pastAnalyses} darkMode={darkMode} />;
+                return <Dashboard onStart={navigateToInput} user={user} pastAnalyses={pastAnalyses} darkMode={darkMode} onSelectAnalysis={handleSelectAnalysis} />;
         }
     };
 

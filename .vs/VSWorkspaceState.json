@@ -2,10 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\client",
-    "\\client\\src",
-    "\\Server",
-    "\\Server\\Controllers"
+    "\\client\\src"
   ],
-  "SelectedNode": "\\Server\\Controllers\\AiController.cs",
+  "SelectedNode": "\\client\\src\\App.jsx",
   "PreviewInSolutionExplorer": false
 }

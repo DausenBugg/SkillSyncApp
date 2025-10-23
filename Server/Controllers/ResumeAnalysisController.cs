@@ -44,4 +44,29 @@ public class ResumeAnalysisController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(new { message = "Analysis saved." });
     }
+
+    [Authorize]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetAnalysisById(int id)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var analysis = await _db.ResumeAnalyses
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+        if (analysis == null)
+            return NotFound();
+
+        return Ok(new
+        {
+            analysis.Id,
+            analysis.JobTitle,
+            analysis.JobDescription,
+            analysis.MatchScore,
+            analysis.CreatedAt,
+            matchingSkills = string.IsNullOrEmpty(analysis.MatchingSkills) ? new string[0] : System.Text.Json.JsonSerializer.Deserialize<string[]>(analysis.MatchingSkills),
+            missingSkills = string.IsNullOrEmpty(analysis.MissingSkills) ? new string[0] : System.Text.Json.JsonSerializer.Deserialize<string[]>(analysis.MissingSkills),
+            analysis = analysis.Analysis,
+            improvements = string.IsNullOrEmpty(analysis.Improvements) ? new object[0] : System.Text.Json.JsonSerializer.Deserialize<object[]>(analysis.Improvements)
+        });
+    }
 }
