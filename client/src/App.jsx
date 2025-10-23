@@ -219,7 +219,14 @@ Requirements:
 
 // ReportScreen shows the backend's analysis results
 const ReportScreen = ({ result, darkMode }) => {
+    const [selectedSkillIdx, setSelectedSkillIdx] = useState(null);
+
     if (!result) return <div>Loading...</div>;
+
+    // Find the improvement for the selected skill
+    const selectedImprovement = selectedSkillIdx !== null && result.improvements
+        ? result.improvements[selectedSkillIdx]
+        : null;
 
     return (
         <div className={`w-full max-w-3xl mx-auto ${darkMode ? 'bg-gray-900 text-gray-100' : ''}`}>
@@ -243,16 +250,29 @@ const ReportScreen = ({ result, darkMode }) => {
                 </ul>
             </div>
 
-            {/* Missing Skills */}
+            {/* Missing Skills as buttons */}
             <div className="mb-8">
                 <h2 className={`text-2xl font-semibold mb-2 ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>Missing Skills</h2>
-                <ul className="flex flex-wrap gap-2">
+                <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Click on one to show only that suggestion</p>
+                <div className="flex flex-wrap gap-2">
                     {result.missingSkills?.length > 0 ? result.missingSkills.map((skill, idx) => (
-                        <li key={idx} className="flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">
+                        <button
+                            key={idx}
+                            className={`flex items-center px-3 py-1 rounded-full border transition font-semibold bg-yellow-100 text-yellow-700 ${selectedSkillIdx === idx ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'border-yellow-600 hover:bg-blue-300' : 'border-yellow-400 hover:bg-blue-100')}`}
+                            onClick={() => setSelectedSkillIdx(idx)}
+                        >
                             <XCircleIcon /> {skill}
-                        </li>
-                    )) : <li className="text-gray-500">No missing skills found.</li>}
-                </ul>
+                        </button>
+                    )) : <span className="text-gray-500">No missing skills found.</span>}
+                    {selectedSkillIdx !== null && (
+                        <button
+                            className={`ml-2 px-3 py-1 rounded-full border font-semibold ${darkMode ? 'bg-gray-700 text-gray-100 border-gray-500 hover:bg-gray-800' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
+                            onClick={() => setSelectedSkillIdx(null)}
+                        >
+                            Show All
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* AI Feedback */}
@@ -261,36 +281,64 @@ const ReportScreen = ({ result, darkMode }) => {
                 <p className={`p-4 rounded ${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`}>{result.analysis}</p>
             </div>
 
-            {/* Improvements */}
+            {/* Improvements & Learning Resources */}
             <div className="mb-8">
                 <h2 className={`text-2xl font-semibold mb-4 ${darkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>Improvements & Learning Resources</h2>
-                <div className="grid gap-6 md:grid-cols-2">
-                    {result.improvements?.map((imp, idx) => (
+                <div className="grid gap-6">
+                    {selectedImprovement ? (
                         <div
-                            key={idx}
-                            className={`rounded-2xl shadow-md border p-6 flex flex-col justify-between transition hover:shadow-lg ${darkMode ? 'bg-gray-800 border-gray-700 hover:border-blue-400' : 'bg-white border-gray-100 hover:border-blue-200'}`}
+                            className={`rounded-2xl shadow-md border p-8 flex flex-col justify-between transition hover:shadow-lg ${darkMode ? 'bg-gray-800 border-gray-700 hover:border-blue-400' : 'bg-white border-gray-100 hover:border-blue-200'}`}
                         >
                             <div>
                                 <div className="flex items-center mb-2">
                                     <svg className="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    <span className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{imp.suggestion}</span>
+                                    <span className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{selectedImprovement.suggestion}</span>
                                 </div>
                                 <p className="text-gray-500 mb-4">
                                     Improve this skill to boost your match score.
                                 </p>
                             </div>
                             <a
-                                href={`https://www.coursera.org/search?query=${encodeURIComponent(imp.searchTerm)}`}
+                                href={`https://www.coursera.org/search?query=${encodeURIComponent(selectedImprovement.searchTerm)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-block mt-2 px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition"
                             >
-                                Search "{imp.searchTerm}" on Coursera
+                                Search "{selectedImprovement.searchTerm}" on Coursera
                             </a>
                         </div>
-                    ))}
+                    ) : (
+                        <div className="grid gap-6 md:grid-cols-2">
+                            {result.improvements?.map((imp, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`rounded-2xl shadow-md border p-6 flex flex-col justify-between transition hover:shadow-lg ${darkMode ? 'bg-gray-800 border-gray-700 hover:border-blue-400' : 'bg-white border-gray-100 hover:border-blue-200'}`}
+                                >
+                                    <div>
+                                        <div className="flex items-center mb-2">
+                                            <svg className="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            <span className={`text-lg font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{imp.suggestion}</span>
+                                        </div>
+                                        <p className="text-gray-500 mb-4">
+                                            Improve this skill to boost your match score.
+                                        </p>
+                                    </div>
+                                    <a
+                                        href={`https://www.coursera.org/search?query=${encodeURIComponent(imp.searchTerm)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-block mt-2 px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition"
+                                    >
+                                        Search "{imp.searchTerm}" on Coursera
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 

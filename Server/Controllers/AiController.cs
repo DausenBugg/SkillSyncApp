@@ -57,7 +57,7 @@ namespace Server.Controllers
                 var analysis = await AnalyzeJobRelevance(request.ResumeText, request.JobDescription, matchingSkills, missingSkills);
 
                 // 4. Suggest improvements
-                var improvements = await SuggestResumeImprovements(request.ResumeText, request.JobDescription);
+                var improvements = await SuggestResumeImprovements(missingSkills);
                 var resources = GetImprovementResources(improvements);
 
                 return Ok(new
@@ -155,28 +155,26 @@ namespace Server.Controllers
         }
 
         // Uses OpenAI to suggest improvements for the resume  
-        private async Task<List<ResumeImprovement>> SuggestResumeImprovements(string resume, string jobDescription)
+        private async Task<List<ResumeImprovement>> SuggestResumeImprovements(List<string> missingSkills)
         {
-            // Prompt OpenAI to return a JSON array of objects with "suggestion" and "topic"
+            // Prompt OpenAI to return a JSON array of objects with "suggestion" and "searchTerm"
             var prompt = $@"
-            Read this resume:
-            {resume}
+            For each of the following missing skills, provide:
+            - A short suggestion for how the user can improve or learn that skill.
+            - The best Coursera search term for a course that would teach that skill.
 
-            And compare it to this job description:
-            {jobDescription}
-
-            What are 4 things that could be improved? 
             Reply with a JSON array of objects, each containing:
-            - ""suggestion"": A short description of the improvement.
-            - ""topic"": A single word or short phrase summarizing the topic of the improvement (for use as a search term).
+            - ""suggestion"": A short actionable improvement.
+            - ""searchTerm"": The best Coursera search term for that skill.
 
             Example:
             [
-              {{ ""suggestion"": ""Learn advanced SQL techniques."", ""topic"": ""SQL"" }},
-              {{ ""suggestion"": ""Improve public speaking skills."", ""topic"": ""Public Speaking"" }},
-              {{ ""suggestion"": ""Get certified in project management."", ""topic"": ""Project Management"" }},
-              {{ ""suggestion"": ""Develop leadership abilities."", ""topic"": ""Leadership"" }}
+              {{ ""suggestion"": ""Take a course on advanced SQL techniques."", ""searchTerm"": ""Advanced SQL"" }},
+              {{ ""suggestion"": ""Practice public speaking in front of groups."", ""searchTerm"": ""Public Speaking"" }},
+              {{ ""suggestion"": ""Get certified in project management."", ""searchTerm"": ""Project Management Certification"" }}
             ]
+
+            Missing skills: {string.Join(", ", missingSkills)}
             ";
 
             var response = await CallOpenAi(prompt);
@@ -190,7 +188,7 @@ namespace Server.Controllers
                     new ResumeImprovement(
                         s.GetValueOrDefault("suggestion", "No suggestion provided."),
                         "https://www.coursera.org/",
-                        s.GetValueOrDefault("topic", "General") // Use topic as the search term
+                        s.GetValueOrDefault("searchTerm", "General")
                     )
                 ).ToList();
             }
@@ -198,9 +196,9 @@ namespace Server.Controllers
             {
                 // If parsing fails, return a default improvement
                 improvements = new List<ResumeImprovement>
-        {
-            new ResumeImprovement("No suggestions available.", "https://www.coursera.org/", "General")
-        };
+                {
+                    new ResumeImprovement("No suggestions available.", "https://www.coursera.org/", "General")
+                };
             }
 
             return improvements;
