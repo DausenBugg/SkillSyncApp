@@ -111,7 +111,7 @@ const InputScreen = ({ onAnalyze, token, setPastAnalyses, darkMode }) => {
             }
         }
         try {
-            const response = await axios.post("http://localhost:5159/api/ai/analyze", {
+            const response = await axios.post("https://skillsyncserver.azurewebsites.net/api/ai/analyze", {
                 resumeText,
                 jobDescription
             });
@@ -119,7 +119,7 @@ const InputScreen = ({ onAnalyze, token, setPastAnalyses, darkMode }) => {
 
             // Save to history if signed in
             if (token) {
-                await axios.post("http://localhost:5159/api/analysis/save", {
+                await axios.post("https://skillsyncserver.azurewebsites.net/api/analysis/save", {
                     ResumeText: resumeText,
                     JobDescription: jobDescription,
                     MatchScore: response.data.matchScore ?? 0,
@@ -132,7 +132,7 @@ const InputScreen = ({ onAnalyze, token, setPastAnalyses, darkMode }) => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 // Optionally refresh past analyses
-                const res = await axios.get('http://localhost:5159/api/analysis/mine', {
+                const res = await axios.get('https://skillsyncserver.azurewebsites.net/api/analysis/mine', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setPastAnalyses(res.data);
@@ -369,16 +369,16 @@ function SignInModal({ onClose, onSignIn, darkMode }) {
         setError('');
         try {
             // Try to register first
-            await axios.post('http://localhost:5159/api/auth/register', { email, password });
+            await axios.post('https://skillsyncserver.azurewebsites.net/api/auth/register', { email, password });
             // Registration successful, now sign in
-            const res = await axios.post('http://localhost:5159/api/auth/login', { email, password });
+            const res = await axios.post('https://skillsyncserver.azurewebsites.net/api/auth/login', { email, password });
             onSignIn(res.data.user, res.data.token);
             onClose();
         } catch (regErr) {
             // If registration failed because email exists, try to sign in
             if (regErr.response && regErr.response.data?.error === "Email already registered.") {
                 try {
-                    const res = await axios.post('http://localhost:5159/api/auth/login', { email, password });
+                    const res = await axios.post('https://skillsyncserver.azurewebsites.net/api/auth/login', { email, password });
                     onSignIn(res.data.user, res.data.token);
                     onClose();
                 } catch {
@@ -431,7 +431,7 @@ export default function App() {
     // Fetch past analyses for the signed-in user
     const fetchPastAnalyses = async (jwt) => {
         try {
-            const res = await axios.get('http://localhost:5159/api/analysis/mine', {
+            const res = await axios.get('https://skillsyncserver.azurewebsites.net/api/analysis/mine', {
                 headers: { Authorization: `Bearer ${jwt}` }
             });
             setPastAnalyses(res.data);
@@ -443,7 +443,7 @@ export default function App() {
     const handleSelectAnalysis = async (id) => {
         if (!token) return;
         try {
-            const res = await axios.get(`http://localhost:5159/api/analysis/${id}`, {
+            const res = await axios.get(`https://skillsyncserver.azurewebsites.net/api/analysis/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAnalysisResult(res.data);
